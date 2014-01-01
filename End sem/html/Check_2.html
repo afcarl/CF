@@ -1,0 +1,236 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Check_2</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-24"><meta name="DC.source" content="Check_2.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Intializations</a></li><li><a href="#3">New matrix R_new with baseline correction</a></li><li><a href="#4">Define Size of dataset for iterations</a></li><li><a href="#5">Intializations</a></li><li><a href="#6">First optimization problem without regularization</a></li></ul></div><pre class="codeinput">clear <span class="string">all</span>;
+load <span class="string">baseline_prediction.mat</span>;
+load <span class="string">user_bias.mat</span>;
+load <span class="string">item_bias.mat</span>;
+load <span class="string">ratings_full.mat</span>;
+load <span class="string">ratings_train.mat</span>;
+load <span class="string">testSet1.mat</span>
+
+mean_full = 3.5299;
+</pre><h2>Intializations<a name="2"></a></h2><pre class="codeinput"><span class="comment">% Fully specified matrix</span>
+total_users = 943; total_items = 1682; f=20;
+
+<span class="comment">% Iterations</span>
+num_iter = 5;
+
+<span class="comment">% Ratings matrix(m,n)</span>
+R = ratings_full;
+<span class="comment">% Check for number of points in full dataset</span>
+n_full = nnz(R);
+
+<span class="comment">% Ratings matrix(m,n)</span>
+R_train_data = ratings_train;
+<span class="comment">% Check for number of points in full dataset</span>
+n_train = nnz(R_train_data);
+
+<span class="comment">% ib is item bias</span>
+ib = ib;
+
+<span class="comment">% ub is user bias</span>
+ub = ub;
+
+<span class="comment">% Constant_matrix: baseline_prediction(u,i) = mean_full + ib(i) + ub(u);</span>
+baseline_prediction = baseline_prediction;
+</pre><h2>New matrix R_new with baseline correction<a name="3"></a></h2><pre class="codeinput">R_new=zeros(total_users,total_items);
+<span class="keyword">for</span> user=1:total_users
+    <span class="keyword">for</span> item=1:total_items
+        <span class="keyword">if</span> R_train_data(user,item)&gt;0
+            R_new(user,item)=R_train_data(user,item)-baseline_prediction(user,item);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2>Define Size of dataset for iterations<a name="4"></a></h2><p>m=50; n=40; f=20; R_new2 = R_new(1:m,1:n);</p><pre class="codeinput">m=total_users;
+n=total_items;
+f=20;
+R_new2 = R_new(1:m,1:n);
+</pre><h2>Intializations<a name="5"></a></h2><pre class="codeinput">P=randn(m,f);
+norm_error=zeros(num_iter+1,1);
+norm_error(1,1)=1;
+idx=(R_new2~=0);
+</pre><h2>First optimization problem without regularization<a name="6"></a></h2><p>Using CVX toolkit from CVX.inc and stephen boyd guide for convex optimization</p><pre class="codeinput"><span class="keyword">for</span> i=1:num_iter
+    cvx_begin
+    variable <span class="string">Q_new(f,n)</span>;
+    temp=R_new2-P*Q_new;
+    temp2=temp(idx);
+    minimize(norm(temp2));
+    <span class="comment">%subject to</span>
+    <span class="comment">%    Q_new&gt;0;</span>
+    cvx_end;
+    Qt=Q_new;
+
+    disp(<span class="string">'Check_1'</span>);
+
+    <span class="comment">%Estimate P using Qt</span>
+    cvx_begin
+    variable <span class="string">P_new(m,f)</span>;
+    temp=R_new2-P_new*Qt;
+    temp2=temp(idx);
+    minimize(norm(temp2));
+    cvx_end;
+
+    disp(<span class="string">'Check_2'</span>);
+
+    P=P_new;
+    norm_error(i+1,1)=norm(temp2);
+
+    disp(sprintf(<span class="string">'After iteration %d, the norm error is %f'</span>,i,norm(temp2)));
+<span class="keyword">end</span>
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+
+
+clear all;
+load baseline_prediction.mat;
+load user_bias.mat;
+load item_bias.mat;
+load ratings_full.mat;
+load ratings_train.mat;
+load testSet1.mat
+
+mean_full = 3.5299;
+%% Intializations
+
+% Fully specified matrix
+total_users = 943; total_items = 1682; f=20;
+
+% Iterations
+num_iter = 5;
+
+% Ratings matrix(m,n)
+R = ratings_full; 
+% Check for number of points in full dataset
+n_full = nnz(R);
+
+% Ratings matrix(m,n)
+R_train_data = ratings_train; 
+% Check for number of points in full dataset
+n_train = nnz(R_train_data);
+
+% ib is item bias
+ib = ib;
+
+% ub is user bias
+ub = ub;
+
+% Constant_matrix: baseline_prediction(u,i) = mean_full + ib(i) + ub(u);
+baseline_prediction = baseline_prediction; 
+
+%% New matrix R_new with baseline correction
+R_new=zeros(total_users,total_items);
+for user=1:total_users
+    for item=1:total_items
+        if R_train_data(user,item)>0
+            R_new(user,item)=R_train_data(user,item)-baseline_prediction(user,item);
+        end
+    end
+end
+
+%% Define Size of dataset for iterations
+% m=50;
+% n=40;
+% f=20;
+% R_new2 = R_new(1:m,1:n);
+
+m=total_users;
+n=total_items;
+f=20;
+R_new2 = R_new(1:m,1:n);
+
+%% Intializations
+P=randn(m,f);
+norm_error=zeros(num_iter+1,1);
+norm_error(1,1)=1;
+idx=(R_new2~=0);
+%% First optimization problem without regularization
+% Using CVX toolkit from CVX.inc and stephen boyd guide for convex optimization
+for i=1:num_iter
+    cvx_begin
+    variable Q_new(f,n);
+    temp=R_new2-P*Q_new;
+    temp2=temp(idx);
+    minimize(norm(temp2));
+    %subject to
+    %    Q_new>0;
+    cvx_end;
+    Qt=Q_new;
+    
+    disp('Check_1');
+
+    %Estimate P using Qt
+    cvx_begin
+    variable P_new(m,f);
+    temp=R_new2-P_new*Qt;
+    temp2=temp(idx);
+    minimize(norm(temp2));
+    cvx_end;
+    
+    disp('Check_2');
+
+    P=P_new;
+    norm_error(i+1,1)=norm(temp2);
+
+    disp(sprintf('After iteration %d, the norm error is %f',i,norm(temp2)));
+end
+
+
+
+##### SOURCE END #####
+--></body></html>

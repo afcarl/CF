@@ -1,0 +1,243 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Check_1</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-24"><meta name="DC.source" content="Check_1.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Matrix factorization using (ALS)</a></li><li><a href="#3">Importing full ratings matrix</a></li><li><a href="#4">Sanity check for full ratings matrix</a></li><li><a href="#6">Importing training ratings matrix</a></li><li><a href="#7">Sanity check for training ratings matrix</a></li><li><a href="#8">Mean of full ratings matrix</a></li><li><a href="#9">Calculating Item bias</a></li><li><a href="#10">Calculation for user bias</a></li><li><a href="#11">Baseline prediction</a></li><li><a href="#12">Interaction_matrix based on test data</a></li></ul></div><h2>Matrix factorization using (ALS)<a name="1"></a></h2><pre class="codeinput">clear <span class="string">all</span>;
+</pre><pre class="codeinput">clc;
+<span class="comment">% Load Dataset</span>
+A=load(<span class="string">'C:\Users\manojg\Dropbox\CF_Task\End sem\ml-100k\ml-100k\u.data'</span>);
+</pre><h2>Importing full ratings matrix<a name="3"></a></h2><pre class="codeinput">total_users = max(A(:,1));
+total_items = max(A(:,2));
+
+indiviual_users = A(:,1);
+indiviual_items = A(:,2);
+indiviual_ratings = A(:,3);
+
+ratings_full = zeros(total_users,total_items);
+<span class="keyword">for</span> user=1:total_users
+    ratings_full(user, indiviual_items(find(indiviual_users==user))) = indiviual_ratings(find(indiviual_users==user));
+<span class="keyword">end</span>
+save(<span class="string">'ratings_full.mat'</span>,<span class="string">'ratings_full'</span>);
+</pre><h2>Sanity check for full ratings matrix<a name="4"></a></h2><pre class="codeinput">ratings_full(1:5,1:5)
+</pre><pre class="codeinput">clc;
+<span class="comment">% Load Dataset</span>
+B=load(<span class="string">'C:\Users\manojg\Dropbox\CF_Task\End sem\ml-100k\ml-100k\u1.base'</span>);
+</pre><h2>Importing training ratings matrix<a name="6"></a></h2><pre class="codeinput">train_users = max(B(:,1));
+train_items = max(B(:,2));
+
+indiviual_train_users = B(:,1);
+indiviual_train_items = B(:,2);
+indiviual_train_ratings = B(:,3);
+
+ratings_train = zeros(total_users,total_items);
+<span class="keyword">for</span> user=1:total_users
+    ratings_train(user, indiviual_train_items(find(indiviual_train_users==user))) = indiviual_train_ratings(find(indiviual_train_users==user));
+<span class="keyword">end</span>
+save(<span class="string">'ratings_train.mat'</span>,<span class="string">'ratings_train'</span>);
+</pre><h2>Sanity check for training ratings matrix<a name="7"></a></h2><pre class="codeinput">ratings_train(1:5,1:5)
+</pre><h2>Mean of full ratings matrix<a name="8"></a></h2><pre class="codeinput">mean_full = sum(sum(ratings_full))/100000;
+</pre><h2>Calculating Item bias<a name="9"></a></h2><pre class="codeinput"><span class="comment">% Lambda for Item bias</span>
+lambda = 10;
+
+<span class="keyword">for</span> i=1:total_items
+   ib_temp = ratings_full(find(ratings_full(:,i)),i);
+   ib_temp2 = ib_temp - mean_full;
+   ib_temp3 = sum(ib_temp2);
+   constant_item = (lambda+size(find(ratings_full(:,i)),1));
+   ib(i) = ib_temp3/constant_item;
+<span class="keyword">end</span>
+
+save(<span class="string">'item_bias.mat'</span>,<span class="string">'ib'</span>);
+</pre><h2>Calculation for user bias<a name="10"></a></h2><pre class="codeinput"><span class="comment">% Lambda for User bias</span>
+lambda_2 = 25;
+
+<span class="keyword">for</span> u=1:943
+  sum1=0;
+  rateditems=0;
+   <span class="keyword">for</span> i=1:1682
+    <span class="keyword">if</span> (ratings_full(u,i)&gt;0)
+       sum1 = sum1 + ratings_full(u,i)-mean_full-ib(i);
+        rateditems = rateditems +1;
+    <span class="keyword">end</span>
+   <span class="keyword">end</span>
+ub(u) = sum1/(lambda_2+rateditems);
+<span class="keyword">end</span>
+
+save(<span class="string">'user_bias.mat'</span>,<span class="string">'ub'</span>);
+</pre><h2>Baseline prediction<a name="11"></a></h2><pre class="codeinput">baseline_prediction = ones(total_users,total_items);
+<span class="keyword">for</span> u=1:total_users
+    <span class="keyword">for</span> i=1:total_items
+    baseline_prediction(u,i) = mean_full + ib(i) + ub(u);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+save(<span class="string">'baseline_prediction.mat'</span>,<span class="string">'baseline_prediction'</span>);
+</pre><h2>Interaction_matrix based on test data<a name="12"></a></h2><pre class="codeinput">interaction_matrix = ratings_train - baseline_prediction;
+save(<span class="string">'interaction_matrix.mat'</span>,<span class="string">'interaction_matrix'</span>);
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Matrix factorization using (ALS)
+clear all;
+%%
+
+clc;
+% Load Dataset
+A=load('C:\Users\manojg\Dropbox\CF_Task\End sem\ml-100k\ml-100k\u.data');
+
+%% Importing full ratings matrix
+total_users = max(A(:,1));
+total_items = max(A(:,2));
+
+indiviual_users = A(:,1);
+indiviual_items = A(:,2);
+indiviual_ratings = A(:,3);
+
+ratings_full = zeros(total_users,total_items);
+for user=1:total_users 
+    ratings_full(user, indiviual_items(find(indiviual_users==user))) = indiviual_ratings(find(indiviual_users==user));
+end
+save('ratings_full.mat','ratings_full');
+
+%% Sanity check for full ratings matrix
+ratings_full(1:5,1:5)
+
+%%
+clc;
+% Load Dataset
+B=load('C:\Users\manojg\Dropbox\CF_Task\End sem\ml-100k\ml-100k\u1.base');
+%% Importing training ratings matrix
+
+train_users = max(B(:,1));
+train_items = max(B(:,2));
+
+indiviual_train_users = B(:,1);
+indiviual_train_items = B(:,2);
+indiviual_train_ratings = B(:,3);
+
+ratings_train = zeros(total_users,total_items);
+for user=1:total_users 
+    ratings_train(user, indiviual_train_items(find(indiviual_train_users==user))) = indiviual_train_ratings(find(indiviual_train_users==user));
+end
+save('ratings_train.mat','ratings_train');
+
+%% Sanity check for training ratings matrix
+ratings_train(1:5,1:5)
+
+%% Mean of full ratings matrix
+mean_full = sum(sum(ratings_full))/100000;
+
+%% Calculating Item bias
+
+% Lambda for Item bias
+lambda = 10;
+
+for i=1:total_items
+   ib_temp = ratings_full(find(ratings_full(:,i)),i);
+   ib_temp2 = ib_temp - mean_full; 
+   ib_temp3 = sum(ib_temp2);
+   constant_item = (lambda+size(find(ratings_full(:,i)),1));
+   ib(i) = ib_temp3/constant_item; 
+end
+
+save('item_bias.mat','ib');
+%% Calculation for user bias
+
+% Lambda for User bias
+lambda_2 = 25;
+
+for u=1:943
+  sum1=0;  
+  rateditems=0;
+   for i=1:1682
+    if (ratings_full(u,i)>0)
+       sum1 = sum1 + ratings_full(u,i)-mean_full-ib(i);  
+        rateditems = rateditems +1; 
+    end
+   end
+ub(u) = sum1/(lambda_2+rateditems);   
+end
+
+save('user_bias.mat','ub');
+
+%% Baseline prediction
+ 
+baseline_prediction = ones(total_users,total_items);
+for u=1:total_users
+    for i=1:total_items
+    baseline_prediction(u,i) = mean_full + ib(i) + ub(u);
+    end
+end
+
+save('baseline_prediction.mat','baseline_prediction');
+%% Interaction_matrix based on test data
+interaction_matrix = ratings_train - baseline_prediction;
+save('interaction_matrix.mat','interaction_matrix');
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### SOURCE END #####
+--></body></html>
