@@ -1,0 +1,369 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Test_2</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-06"><meta name="DC.source" content="Test_2.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">NNMF test on a test matrix taken from movie lens dataset</a></li><li><a href="#3">Straight NNMF on complete matrix of ratings from movie lens dataset</a></li></ul></div><pre class="codeinput">clear <span class="string">all</span>;
+
+load(<span class="string">'C:\Users\Omkar\Dropbox\CF_Task\Matrix_completion\ratings.mat'</span>); <span class="comment">%load the matrix in to workspace</span>
+r = rank(matrix);           <span class="comment">% To find rank of matrix</span>
+total_users = 943;
+total_items = 1682;
+</pre><h2>NNMF test on a test matrix taken from movie lens dataset<a name="2"></a></h2><pre class="codeinput">test_matrix = matrix(1:10,1:10);
+test_matrix
+rank_test = rank(test_matrix);
+[W1,F1] = nnmf(test_matrix,rank_test);
+
+test_matrix_recovered = W1*F1;
+test_matrix_recovered
+</pre><pre class="codeoutput">
+test_matrix =
+
+     5     3     4     3     3     0     4     1     5     0
+     4     0     0     0     0     0     0     0     0     2
+     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0
+     4     0     0     0     0     0     2     4     4     0
+     0     0     0     5     0     0     0     0     5     0
+     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     4     0     0     0
+     0     0     0     0     0     0     0     0     4     0
+
+
+test_matrix_recovered =
+
+  Columns 1 through 7
+
+    5.0000    3.0000    4.0000    3.0000    3.0000         0    4.0000
+    4.0000    0.0000    0.0000    0.0000    0.0000         0    0.0000
+         0         0         0         0         0         0         0
+         0         0         0         0         0         0         0
+         0         0         0         0         0         0         0
+    3.9994    0.0002    0.0003    0.0002    0.0002         0    2.0000
+    0.0000    0.0000    0.0000    5.0000    0.0000         0    0.0000
+         0         0         0         0         0         0         0
+    0.0000    0.0000    0.0000    0.0000    0.0000         0    4.0000
+    0.0000    0.0000    0.0000    0.0000    0.0000         0    0.0000
+
+  Columns 8 through 10
+
+    1.0000    5.0000    0.0000
+    0.0000    0.0000    2.0000
+         0         0         0
+         0         0         0
+         0         0         0
+    4.0006    4.0006    0.0012
+    0.0000    5.0000    0.0000
+         0         0         0
+    0.0000    0.0000    0.0000
+    0.0000    4.0000    0.0000
+
+</pre><h2>Straight NNMF on complete matrix of ratings from movie lens dataset<a name="3"></a></h2><pre class="codeinput">test_matrix2 = matrix(:,:);
+<span class="comment">%test_matrix2(1:10,1:10)</span>
+rank_test2 = rank(test_matrix2);
+[WR,FR] = nnmf(test_matrix2,rank_test2);
+
+test_matrix2_recovered = WR*FR;
+test_matrix2_recovered(1:10,1:10)
+</pre><pre class="codeoutput">
+ans =
+
+  Columns 1 through 7
+
+    5.0000    3.0000    4.0000    3.0000    3.0000    0.0000    4.0000
+    4.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+    4.0000    0.0000    0.0000    0.0000    0.0000    0.0000    2.0000
+    0.0000    0.0000    0.0000    5.0000    0.0000    0.0000    0.0000
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    4.0000
+    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+
+  Columns 8 through 10
+
+    1.0000    5.0000    0.0000
+    0.0000    0.0000    2.0000
+    0.0000    0.0000    0.0000
+    0.0000    0.0000    0.0000
+    0.0000    0.0000    0.0000
+    4.0000    4.0000    0.0000
+    0.0000    5.0000    0.0000
+    0.0000    0.0000    0.0000
+    0.0000    0.0000    0.0000
+    0.0000    4.0000    0.0000
+
+</pre><pre class="codeinput">rand_samples = createSamplingScheme ([total_users total_items], <span class="string">'random'</span>, 0.3);
+size_of_random_samples = numel(rand_samples);
+
+<span class="comment">%First set of random samples</span>
+random_row = randperm(total_users);
+rand_samples_1 = rand_samples(random_row,:);
+size_of_random_samples_1 = numel(rand_samples_1);
+
+<span class="comment">%Second set of random samples</span>
+random_row = randperm(total_users);
+rand_samples_2 = rand_samples(random_row,:);
+size_of_random_samples_2 = numel(rand_samples_2);
+
+<span class="comment">%Third set of random samples</span>
+random_row = randperm(total_users);
+rand_samples_3 = rand_samples(random_row,:);
+size_of_random_samples_3 = numel(rand_samples_3);
+
+<span class="comment">%Fourth set of random samples</span>
+random_row = randperm(total_users);
+rand_samples_4 = rand_samples(random_row,:);
+size_of_random_samples_4 = numel(rand_samples_4);
+
+<span class="comment">%Fifth set of random samples</span>
+random_row = randperm(total_users);
+rand_samples_5 = rand_samples(random_row,:);
+size_of_random_samples_5 = numel(rand_samples_5);
+</pre><pre class="codeinput"><span class="comment">% Sub-sampled matrix - 1</span>
+sub_sampled_matrix_1 = rand_samples_1.*matrix;
+<span class="comment">% Non-Negative Matrix Factorization</span>
+r1 = rank(sub_sampled_matrix_1);
+[p1,q1] = nnmf(sub_sampled_matrix_1,r1);
+recovered_matrix_1 = p1*q1;
+ans1 = norm(matrix - recovered_matrix_1)/norm(matrix)
+
+<span class="comment">% Sub-sampled matrix - 2</span>
+sub_sampled_matrix_2 = rand_samples_2.*matrix;
+<span class="comment">% Non-Negative Matrix Factorization</span>
+r2 = rank(sub_sampled_matrix_1);
+[p2,q2] = nnmf(sub_sampled_matrix_2,r2);
+recovered_matrix_2 = p2*q2;
+ans2 = norm(matrix - recovered_matrix_2)/norm(matrix)
+
+<span class="comment">% Sub-sampled matrix - 3</span>
+sub_sampled_matrix_3 = rand_samples_3.*matrix;
+<span class="comment">% Non-Negative Matrix Factorization</span>
+r3 = rank(sub_sampled_matrix_3);
+[p3,q3] = nnmf(sub_sampled_matrix_3,r3);
+recovered_matrix_3 = p3*q3;
+ans3 = norm(matrix - recovered_matrix_3)/norm(matrix)
+
+<span class="comment">% Sub-sampled matrix - 4</span>
+sub_sampled_matrix_4 = rand_samples_4.*matrix;
+<span class="comment">% Non-Negative Matrix Factorization</span>
+r4 = rank(sub_sampled_matrix_4);
+[p4,q4] = nnmf(sub_sampled_matrix_4,r4);
+recovered_matrix_4 = p4*q4;
+ans4 = norm(matrix - recovered_matrix_4)/norm(matrix)
+
+<span class="comment">% Sub-sampled matrix - 5</span>
+sub_sampled_matrix_5 = rand_samples_5.*matrix;
+<span class="comment">% Non-Negative Matrix Factorization</span>
+r5 = rank(sub_sampled_matrix_5);
+[p5,q5] = nnmf(sub_sampled_matrix_5,r5);
+recovered_matrix_5 = p5*q5;
+ans5 = norm(matrix - recovered_matrix_5)/norm(matrix)
+</pre><pre class="codeoutput">
+ans1 =
+
+  292.0060
+
+
+ans2 =
+
+   69.5349
+
+
+ans3 =
+
+    0.7028
+
+
+ans4 =
+
+  834.4055
+
+
+ans5 =
+
+  167.8547
+
+</pre><p>clear all clc</p><pre class="codeinput"><span class="comment">%m = 1000; n = 1500; f = 20;</span>
+<span class="comment">% P0 = rand(m,f);</span>
+<span class="comment">% Q0 = rand(n,f);</span>
+<span class="comment">% R0 = P0*Q0';</span>
+M = createSamplingScheme ([m n], <span class="string">'random'</span>, 0.2);
+<span class="comment">% Y = M.*R0;</span>
+<span class="comment">% IDX = find(M);</span>
+</pre><pre class="codeoutput">Undefined function or variable 'm'.
+
+Error in Test_2 (line 105)
+M = createSamplingScheme ([m n], 'random', 0.2);
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+clear all;
+
+load('C:\Users\Omkar\Dropbox\CF_Task\Matrix_completion\ratings.mat'); %load the matrix in to workspace
+r = rank(matrix);           % To find rank of matrix
+total_users = 943;
+total_items = 1682;
+
+
+%% NNMF test on a test matrix taken from movie lens dataset
+test_matrix = matrix(1:10,1:10);
+test_matrix
+rank_test = rank(test_matrix); 
+[W1,F1] = nnmf(test_matrix,rank_test);
+
+test_matrix_recovered = W1*F1;
+test_matrix_recovered
+
+%% Straight NNMF on complete matrix of ratings from movie lens dataset
+test_matrix2 = matrix(:,:);
+%test_matrix2(1:10,1:10)
+rank_test2 = rank(test_matrix2); 
+[WR,FR] = nnmf(test_matrix2,rank_test2);
+
+test_matrix2_recovered = WR*FR;
+test_matrix2_recovered(1:10,1:10)
+%%
+rand_samples = createSamplingScheme ([total_users total_items], 'random', 0.3);
+size_of_random_samples = numel(rand_samples);
+
+%First set of random samples
+random_row = randperm(total_users);
+rand_samples_1 = rand_samples(random_row,:);
+size_of_random_samples_1 = numel(rand_samples_1);
+
+%Second set of random samples
+random_row = randperm(total_users);
+rand_samples_2 = rand_samples(random_row,:);
+size_of_random_samples_2 = numel(rand_samples_2);
+
+%Third set of random samples
+random_row = randperm(total_users);
+rand_samples_3 = rand_samples(random_row,:);
+size_of_random_samples_3 = numel(rand_samples_3);
+
+%Fourth set of random samples
+random_row = randperm(total_users);
+rand_samples_4 = rand_samples(random_row,:);
+size_of_random_samples_4 = numel(rand_samples_4);
+
+%Fifth set of random samples
+random_row = randperm(total_users);
+rand_samples_5 = rand_samples(random_row,:);
+size_of_random_samples_5 = numel(rand_samples_5);
+
+%%
+
+% Sub-sampled matrix - 1
+sub_sampled_matrix_1 = rand_samples_1.*matrix;
+% Non-Negative Matrix Factorization
+r1 = rank(sub_sampled_matrix_1);
+[p1,q1] = nnmf(sub_sampled_matrix_1,r1);
+recovered_matrix_1 = p1*q1;
+ans1 = norm(matrix - recovered_matrix_1)/norm(matrix)
+
+% Sub-sampled matrix - 2
+sub_sampled_matrix_2 = rand_samples_2.*matrix;
+% Non-Negative Matrix Factorization
+r2 = rank(sub_sampled_matrix_1);
+[p2,q2] = nnmf(sub_sampled_matrix_2,r2);
+recovered_matrix_2 = p2*q2;
+ans2 = norm(matrix - recovered_matrix_2)/norm(matrix)
+
+% Sub-sampled matrix - 3
+sub_sampled_matrix_3 = rand_samples_3.*matrix;
+% Non-Negative Matrix Factorization
+r3 = rank(sub_sampled_matrix_3);
+[p3,q3] = nnmf(sub_sampled_matrix_3,r3);
+recovered_matrix_3 = p3*q3;
+ans3 = norm(matrix - recovered_matrix_3)/norm(matrix)
+
+% Sub-sampled matrix - 4
+sub_sampled_matrix_4 = rand_samples_4.*matrix;
+% Non-Negative Matrix Factorization
+r4 = rank(sub_sampled_matrix_4);
+[p4,q4] = nnmf(sub_sampled_matrix_4,r4);
+recovered_matrix_4 = p4*q4;
+ans4 = norm(matrix - recovered_matrix_4)/norm(matrix)
+
+% Sub-sampled matrix - 5
+sub_sampled_matrix_5 = rand_samples_5.*matrix;
+% Non-Negative Matrix Factorization
+r5 = rank(sub_sampled_matrix_5);
+[p5,q5] = nnmf(sub_sampled_matrix_5,r5);
+recovered_matrix_5 = p5*q5;
+ans5 = norm(matrix - recovered_matrix_5)/norm(matrix)
+
+
+%%
+% clear all
+% clc
+%m = 1000; n = 1500; f = 20;
+% P0 = rand(m,f);
+% Q0 = rand(n,f);
+% R0 = P0*Q0';
+M = createSamplingScheme ([m n], 'random', 0.2);
+% Y = M.*R0;
+% IDX = find(M);
+
+
+
+%%
+
+
+##### SOURCE END #####
+--></body></html>

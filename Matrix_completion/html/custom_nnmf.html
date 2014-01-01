@@ -1,0 +1,166 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>custom_nnmf</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-09"><meta name="DC.source" content="custom_nnmf.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Params</a></li><li><a href="#4">Usage</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [ P,Q ] = custom_nnmf(R, K, steps, alpha, beta )
+</pre><pre class="codeinput"><span class="comment">%%Custom NNMF</span>
+</pre><h2>Params<a name="3"></a></h2><p>R=Original matrix to be factorized K=Number of factors/features steps=Number of iterations, use 1e5 or so alpha, use 1e-4 beta, use 1e-2</p><h2>Usage<a name="4"></a></h2><p>R=rand(1000,600); K=20; steps=5000; alpha=2e-4; beta=2e-2; [P,Q]=custom_nnmf(R, K, steps, alpha, beta ); norm(R-P*Q,1)/length&reg;</p><pre class="codeinput">N=size(R,1);
+M=size(R,2);
+P = rand(N,K);
+Q = rand(K,M);
+
+
+<span class="keyword">for</span> step=1:steps
+    <span class="keyword">for</span> i=1:N
+        <span class="keyword">for</span> j=1:M
+            <span class="keyword">if</span> R(i,j)&gt;0
+                eij=R(i,j)-P(i,:)*Q(:,j);
+                <span class="keyword">for</span> k=1:K
+                    P(i,k) = P(i,k) + alpha * (2 * eij * Q(k,j) - beta * P(i,k));
+                    Q(k,j) = Q(k,j) + alpha * (2 * eij * P(i,k) - beta * Q(k,j));
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="comment">%eR=P*Q;</span>
+    e=0;
+    <span class="keyword">for</span> i=1:N
+        <span class="keyword">for</span> j=1:M
+            <span class="keyword">if</span> R(i,j) &gt; 0
+                e = e + (R(i,j) - P(i,:)*Q(:,j))^ 2;
+                <span class="keyword">for</span> k = 1:K
+                    e = e + (beta/2) * ((P(i,k)^2) + (Q(k,j)^2) );
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> e &lt; 0.001
+        <span class="keyword">break</span>
+    <span class="keyword">end</span>
+
+<span class="comment">%     Q=Q';</span>
+
+
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Error using custom_nnmf (line 21)
+Not enough input arguments.
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+function [ P,Q ] = custom_nnmf(R, K, steps, alpha, beta )
+%%Custom NNMF
+
+%% Params
+% R=Original matrix to be factorized
+% K=Number of factors/features
+% steps=Number of iterations, use 1e5 or so 
+% alpha, use 1e-4
+% beta, use 1e-2
+
+%% Usage
+% R=rand(1000,600);
+% K=20;
+% steps=5000;
+% alpha=2e-4;
+% beta=2e-2;
+% [P,Q]=custom_nnmf(R, K, steps, alpha, beta );
+% norm(R-P*Q,1)/length(R)
+
+
+N=size(R,1);
+M=size(R,2);
+P = rand(N,K);
+Q = rand(K,M);
+
+
+for step=1:steps
+    for i=1:N
+        for j=1:M
+            if R(i,j)>0
+                eij=R(i,j)-P(i,:)*Q(:,j);
+                for k=1:K
+                    P(i,k) = P(i,k) + alpha * (2 * eij * Q(k,j) - beta * P(i,k));
+                    Q(k,j) = Q(k,j) + alpha * (2 * eij * P(i,k) - beta * Q(k,j));
+                end
+            end
+        end
+    end
+    %eR=P*Q;
+    e=0;
+    for i=1:N
+        for j=1:M
+            if R(i,j) > 0
+                e = e + (R(i,j) - P(i,:)*Q(:,j))^ 2;
+                for k = 1:K
+                    e = e + (beta/2) * ((P(i,k)^2) + (Q(k,j)^2) );
+                end
+            end
+        end
+    end
+    if e < 0.001
+        break
+    end
+    
+%     Q=Q';
+    
+
+
+end
+
+
+##### SOURCE END #####
+--></body></html>

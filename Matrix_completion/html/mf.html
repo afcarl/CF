@@ -1,0 +1,379 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>mf</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-11-09"><meta name="DC.source" content="mf.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Load data and seeting up path</a></li><li><a href="#2">Choosing number of factors</a></li><li><a href="#3">Sanity checks to see if data is right</a></li><li><a href="#4">Creating Ratings matrix- R</a></li><li><a href="#5">Sanity check on the sparsity level</a></li><li><a href="#6">Creating subset of dataset for "faster" results</a></li><li><a href="#7">Creating 5 cross validation sets</a></li><li><a href="#8">Doing NNMF and obtaining NMAE</a></li><li><a href="#9">Plotting NNMF results</a></li><li><a href="#10">Incremental Rank Power Factorization</a></li><li><a href="#11">Plotting IRPF results</a></li><li><a href="#12">Fixed Point Continuation</a></li><li><a href="#13">Plotting FPC results</a></li><li><a href="#14">Singular Value Thresholding</a></li><li><a href="#15">Plotting SVT results</a></li><li><a href="#16">Matrix factorization using Custom NNMF</a></li><li><a href="#17">Plotting Custom NNMF results</a></li><li><a href="#18">To save whole workspace as mat file to avoid future computation</a></li><li><a href="#19">Acknowledgements:</a></li></ul></div><h2>Load data and seeting up path<a name="1"></a></h2><p>This section is used to load the 100k dataset Assignment-3 Collaborative filtering Nipun Batra &amp; Manoj Gulati</p><pre class="codeinput">clear;
+clc;
+u=load(<span class="string">'C:\Users\Omkar\Dropbox\CF_Task\Matrix_completion\ml-100k\ml-100k\u.data'</span>);
+addpath(genpath(<span class="string">'C:\Users\Omkar\Dropbox\CF_Task\Matrix_completion'</span>));
+</pre><h2>Choosing number of factors<a name="2"></a></h2><pre class="codeinput">f=20;
+</pre><h2>Sanity checks to see if data is right<a name="3"></a></h2><pre class="codeinput">u(1:10,:)
+</pre><h2>Creating Ratings matrix- R<a name="4"></a></h2><pre class="codeinput">num_users=max(u(:,1));
+num_movies=max(u(:,2));
+R=zeros(num_users,num_movies);
+
+<span class="comment">%Filling entries</span>
+<span class="keyword">for</span> i=1:size(u(:,1))
+    user=u(i,1);
+    movie=u(i,2);
+    rating=u(i,3);
+    R(user,movie)=rating;
+<span class="keyword">end</span>
+</pre><h2>Sanity check on the sparsity level<a name="5"></a></h2><pre class="codeinput">sparsity_level_R_matrix=sum(R(:)==0);
+entries=num_movies*num_users-sparsity_level_R_matrix;
+
+<span class="comment">%Confirm if entries is 10K</span>
+
+disp(entries==size(u,1));
+</pre><h2>Creating subset of dataset for "faster" results<a name="6"></a></h2><pre class="codeinput"><span class="comment">%R=R(,:);</span>
+</pre><h2>Creating 5 cross validation sets<a name="7"></a></h2><pre class="codeinput">Y=zeros(5,num_users,num_movies);
+<span class="keyword">for</span> j = 1:5
+    <span class="keyword">for</span> i=1:20000
+         user=u((j-1)*20000+i,1);
+         movie=u((j-1)*20000+i,2);
+         rating=u((j-1)*20000+i,3);
+         Y(j,user,movie)=rating;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">%Size of matrix</span>
+size_matrix=num_users*num_movies;
+</pre><h2>Doing NNMF and obtaining NMAE<a name="8"></a></h2><pre class="codeinput">NMAE_NNMF=zeros(5,1);
+<span class="keyword">for</span> i=1:5
+    [P,Q] = nnmf(reshape(Y(i,:,:),[num_users num_movies]), f);
+    XRecon = P*Q;
+    <span class="comment">%NMAE_NNMF(i)=norm(R - XRecon)/norm(R);</span>
+    NMAE_NNMF(i)=norm(R - XRecon)/size_matrix;
+<span class="keyword">end</span>
+</pre><h2>Plotting NNMF results<a name="9"></a></h2><pre class="codeinput">figure(1);
+bar(NMAE_NNMF);
+title(<span class="string">'NMAE for NNMF different CV sets'</span>);
+xlabel(<span class="string">'CV set'</span>);
+ylabel(<span class="string">'NNMF'</span>);
+</pre><h2>Incremental Rank Power Factorization<a name="10"></a></h2><pre class="codeinput">NMAE_IRPF=zeros(5,1);
+
+<span class="keyword">for</span> i=1:1
+    temp = reshape(Y(i,:,:),[num_users num_movies]);
+    IDX = find(temp);
+    M = temp&gt;0;
+    S.type = <span class="string">'()'</span>;
+    S.subs{:} = IDX;
+    A = @(X) subsref(X,S);
+    Ah = @(X) subsasgn(zeros(num_users,num_movies),S,X);
+    AhA = @(X) X.*M;
+    XRecon = irpf_operator_cg(A, Ah, AhA, temp(IDX), [num_users,num_movies], f,f+1);
+    <span class="comment">%NMAE_IRPF(i)=norm(XRecon-R)/norm(R);</span>
+    NMAE_IRPF(i)=norm(XRecon-R)/size_matrix;
+<span class="keyword">end</span>
+</pre><h2>Plotting IRPF results<a name="11"></a></h2><pre class="codeinput">figure(2);
+bar(NMAE_IRPF);
+title(<span class="string">'NMAE for IRPF different CV sets'</span>);
+xlabel(<span class="string">'CV set'</span>);
+ylabel(<span class="string">'IRPF'</span>);
+</pre><h2>Fixed Point Continuation<a name="12"></a></h2><pre class="codeinput">NMAE_FPC=zeros(5,1);
+<span class="keyword">for</span> i=1:1
+    <span class="comment">%For now just loop once to save time</span>
+    temp=reshape(Y(i,:,:),[num_users num_movies]);
+    IDX = find(temp);
+    mu_final = 0.1;
+    [U,S,V,numiter] = FPC([num_users, num_movies],IDX,temp(IDX),mu_final);
+    XRecon = U*S*V';
+    <span class="comment">%NMAE_FPC(i)=norm(R-XRecon,'fro')/norm(R,'fro');</span>
+    NMAE_FPC(i)=norm(R-XRecon,<span class="string">'fro'</span>)/size_matrix;
+<span class="keyword">end</span>
+</pre><h2>Plotting FPC results<a name="13"></a></h2><pre class="codeinput">figure(3);
+bar(NMAE_FPC);
+title(<span class="string">'NMAE for FPC different CV sets'</span>);
+xlabel(<span class="string">'CV set'</span>);
+ylabel(<span class="string">'FPC'</span>);
+</pre><h2>Singular Value Thresholding<a name="14"></a></h2><pre class="codeinput">NMAE_SVT=zeros(5,1);
+<span class="keyword">for</span> i=1:1
+    <span class="comment">%For now just loop once</span>
+    temp=reshape(Y(i,:,:),[num_users num_movies]);
+    IDX = find(temp);
+    tau = 5*sqrt(num_users*num_movies);
+    <span class="comment">%IDX = find(reshape(M(i,:,:),[s num_users num_movies]));</span>
+    delta = 1.2*length(IDX)/(num_users*num_movies);
+    [U,S,V,numiter] = SVT([num_users num_movies],IDX,temp(IDX),tau,delta);
+    XRecon = U*S*V';
+    <span class="comment">%NMAE_SVT(i)=norm(R-XRecon,'fro')/norm(R,'fro');</span>
+    NMAE_SVT(i)=norm(R-XRecon,<span class="string">'fro'</span>)/size_matrix;
+<span class="keyword">end</span>
+</pre><h2>Plotting SVT results<a name="15"></a></h2><pre class="codeinput">figure(4);
+bar(NMAE_SVT);
+title(<span class="string">'NMAE for SVT different CV sets'</span>);
+xlabel(<span class="string">'CV set'</span>);
+ylabel(<span class="string">'SVT'</span>);
+</pre><h2>Matrix factorization using Custom NNMF<a name="16"></a></h2><pre class="codeinput">K = 20;
+steps = 500;
+alpha = 2e-3;
+beta = 2e-2;
+
+NMAE_Custom_NNMF=zeros(5,1);
+<span class="comment">% for i=1:1</span>
+    <span class="comment">%For now just loop once to save time</span>
+    temp=reshape(Y(i,:,:),[num_users num_movies]);
+    disp(<span class="string">'Check0'</span>);
+    [P,Q] = custom_nnmf(temp, K, steps, alpha, beta );
+    disp(<span class="string">'Check1'</span>);
+    XRecon = P*Q;
+    disp(<span class="string">'Check2'</span>);
+    <span class="comment">%NMAE_FPC(i)=norm(R-XRecon,'fro')/norm(R,'fro');</span>
+    NMAE_Custom_NNMF(i) = norm(R-XRecon)/size_matrix;
+    disp(<span class="string">'Check3'</span>);
+<span class="comment">% end</span>
+</pre><h2>Plotting Custom NNMF results<a name="17"></a></h2><pre class="codeinput">figure(5);
+bar(NMAE_Custom_NNMF);
+title(<span class="string">'NMAE for Custom NNMF different CV sets'</span>);
+xlabel(<span class="string">'CV set'</span>);
+ylabel(<span class="string">'Custom NNMF'</span>);
+</pre><h2>To save whole workspace as mat file to avoid future computation<a name="18"></a></h2><pre class="codeinput">save <span class="string">09_11_2013.mat</span>
+</pre><h2>Acknowledgements:<a name="19"></a></h2><pre class="codeinput"><span class="comment">% 1. Ms.Anupriya Gogna</span>
+<span class="comment">% 2. http://www.quuxlabs.com/blog/2010/09/matrix-factorization-a-simple-tutorial-and-implementation-in-python/</span>
+<span class="comment">% 3. sites.google.com/site/igorcarron2/matrixfactorizations</span>
+<span class="comment">% 4. http://nuit-blanche.blogspot.in/2011/08/current-jungle-in-matrix-factorization.html</span>
+<span class="comment">% 5. www.mathworks.com/help/stats/nnmf.html?</span>
+<span class="comment">% 6. http://mr.usc.edu/download/irpf IRPF Implementation from Justin Haldar</span>
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Load data and seeting up path
+% This section is used to load the 100k dataset
+% Assignment-3 Collaborative filtering 
+% Nipun Batra & Manoj Gulati
+ 
+clear;
+clc;
+u=load('C:\Users\Omkar\Dropbox\CF_Task\Matrix_completion\ml-100k\ml-100k\u.data');
+addpath(genpath('C:\Users\Omkar\Dropbox\CF_Task\Matrix_completion'));
+
+%% Choosing number of factors
+f=20;        
+
+%% Sanity checks to see if data is right
+u(1:10,:)
+
+%% Creating Ratings matrix- R
+
+num_users=max(u(:,1));
+num_movies=max(u(:,2));
+R=zeros(num_users,num_movies);
+
+%Filling entries 
+for i=1:size(u(:,1))
+    user=u(i,1);
+    movie=u(i,2);
+    rating=u(i,3);
+    R(user,movie)=rating;
+end
+
+%% Sanity check on the sparsity level
+
+sparsity_level_R_matrix=sum(R(:)==0);
+entries=num_movies*num_users-sparsity_level_R_matrix;
+
+%Confirm if entries is 10K
+
+disp(entries==size(u,1));
+
+%% Creating subset of dataset for "faster" results
+%R=R(,:);
+
+%% Creating 5 cross validation sets 
+Y=zeros(5,num_users,num_movies);
+for j = 1:5
+    for i=1:20000
+         user=u((j-1)*20000+i,1);
+         movie=u((j-1)*20000+i,2);
+         rating=u((j-1)*20000+i,3);
+         Y(j,user,movie)=rating;
+    end
+end
+
+%Size of matrix 
+size_matrix=num_users*num_movies;
+
+%% Doing NNMF and obtaining NMAE
+
+NMAE_NNMF=zeros(5,1);
+for i=1:5
+    [P,Q] = nnmf(reshape(Y(i,:,:),[num_users num_movies]), f);
+    XRecon = P*Q;
+    %NMAE_NNMF(i)=norm(R - XRecon)/norm(R);
+    NMAE_NNMF(i)=norm(R - XRecon)/size_matrix;
+end
+
+%% Plotting NNMF results
+figure(1);
+bar(NMAE_NNMF);
+title('NMAE for NNMF different CV sets');
+xlabel('CV set');
+ylabel('NNMF');
+
+%% Incremental Rank Power Factorization
+NMAE_IRPF=zeros(5,1);
+
+for i=1:1 
+    temp = reshape(Y(i,:,:),[num_users num_movies]);
+    IDX = find(temp);
+    M = temp>0;
+    S.type = '()';
+    S.subs{:} = IDX;
+    A = @(X) subsref(X,S);
+    Ah = @(X) subsasgn(zeros(num_users,num_movies),S,X);
+    AhA = @(X) X.*M;
+    XRecon = irpf_operator_cg(A, Ah, AhA, temp(IDX), [num_users,num_movies], f,f+1);
+    %NMAE_IRPF(i)=norm(XRecon-R)/norm(R);
+    NMAE_IRPF(i)=norm(XRecon-R)/size_matrix;
+end
+
+%% Plotting IRPF results
+figure(2);
+bar(NMAE_IRPF);
+title('NMAE for IRPF different CV sets');
+xlabel('CV set');
+ylabel('IRPF');
+
+%% Fixed Point Continuation
+
+NMAE_FPC=zeros(5,1);
+for i=1:1
+    %For now just loop once to save time
+    temp=reshape(Y(i,:,:),[num_users num_movies]);
+    IDX = find(temp);    
+    mu_final = 0.1;
+    [U,S,V,numiter] = FPC([num_users, num_movies],IDX,temp(IDX),mu_final);
+    XRecon = U*S*V';
+    %NMAE_FPC(i)=norm(R-XRecon,'fro')/norm(R,'fro');
+    NMAE_FPC(i)=norm(R-XRecon,'fro')/size_matrix;
+end
+
+%% Plotting FPC results
+
+figure(3);
+bar(NMAE_FPC);
+title('NMAE for FPC different CV sets');
+xlabel('CV set');
+ylabel('FPC');
+
+%% Singular Value Thresholding
+
+NMAE_SVT=zeros(5,1);
+for i=1:1
+    %For now just loop once
+    temp=reshape(Y(i,:,:),[num_users num_movies]);
+    IDX = find(temp);
+    tau = 5*sqrt(num_users*num_movies);
+    %IDX = find(reshape(M(i,:,:),[s num_users num_movies]));
+    delta = 1.2*length(IDX)/(num_users*num_movies);
+    [U,S,V,numiter] = SVT([num_users num_movies],IDX,temp(IDX),tau,delta);
+    XRecon = U*S*V';
+    %NMAE_SVT(i)=norm(R-XRecon,'fro')/norm(R,'fro');
+    NMAE_SVT(i)=norm(R-XRecon,'fro')/size_matrix;
+end
+
+%% Plotting SVT results
+
+figure(4);
+bar(NMAE_SVT);
+title('NMAE for SVT different CV sets');
+xlabel('CV set');
+ylabel('SVT');
+
+%% Matrix factorization using Custom NNMF
+
+K = 20;
+steps = 500;
+alpha = 2e-3;
+beta = 2e-2;
+
+NMAE_Custom_NNMF=zeros(5,1);
+% for i=1:1
+    %For now just loop once to save time
+    temp=reshape(Y(i,:,:),[num_users num_movies]);
+    disp('Check0');
+    [P,Q] = custom_nnmf(temp, K, steps, alpha, beta );
+    disp('Check1');
+    XRecon = P*Q;
+    disp('Check2');
+    %NMAE_FPC(i)=norm(R-XRecon,'fro')/norm(R,'fro');
+    NMAE_Custom_NNMF(i) = norm(R-XRecon)/size_matrix;
+    disp('Check3');
+% end
+
+%% Plotting Custom NNMF results
+
+figure(5);
+bar(NMAE_Custom_NNMF);
+title('NMAE for Custom NNMF different CV sets');
+xlabel('CV set');
+ylabel('Custom NNMF');
+
+%% To save whole workspace as mat file to avoid future computation
+
+save 09_11_2013.mat 
+
+%% Acknowledgements:
+
+% 1. Ms.Anupriya Gogna
+% 2. http://www.quuxlabs.com/blog/2010/09/matrix-factorization-a-simple-tutorial-and-implementation-in-python/
+% 3. sites.google.com/site/igorcarron2/matrixfactorizations
+% 4. http://nuit-blanche.blogspot.in/2011/08/current-jungle-in-matrix-factorization.html
+% 5. www.mathworks.com/help/stats/nnmf.html?
+% 6. http://mr.usc.edu/download/irpf IRPF Implementation from Justin Haldar
+
+##### SOURCE END #####
+--></body></html>
