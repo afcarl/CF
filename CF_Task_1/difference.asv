@@ -1,0 +1,11 @@
+
+function distance=difference(i,j,ratings,distance_metric)
+
+idx=ratings(i,:)>0 & ratings(j,:)>0;
+
+if distance_metric=='manhattan'
+    distance=pdist2(ratings(i,idx),ratings(j,idx),'cityblock');
+
+elseif distance_metric=='cosine'
+    distance=pdist2(ratings(i,idx),ratings(j,idx),'cosine');
+end
